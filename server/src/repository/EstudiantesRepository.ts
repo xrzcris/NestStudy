@@ -1,6 +1,6 @@
 import mysql from 'mysql2';
 import dotenv from 'dotenv';
-import { Estudiante, GETEstudianteResponseDTO, POSTEstudianteRequestDTO } from '../types/EstudiantesTypes';
+import { Estudiante, POSTEstudianteRequestDTO, PUTEstudianteRequestDTO } from '../types/EstudiantesTypes';
 
 // Load environment variables
 dotenv.config();
@@ -17,39 +17,26 @@ const pool = mysql.createPool({
 // Use Promise-based pool queries (for async/await support)
 const promisePool = pool.promise();
 
-// EstudianteRepository.ts
-export class EstudianteRepository
+// EstudiantesRepository.ts
+export class EstudiantesRepository
 {
-    static async createEstudiante(estudianteDTO: POSTEstudianteRequestDTO): Promise<GETEstudianteResponseDTO | null>
+    static CreateEstudiante = async (estudianteDTO: POSTEstudianteRequestDTO): Promise<Estudiante | null> =>
     {
-        const [result] = await promisePool.query('INSERT INTO estudiantes (nombre, email, password, carrera) VALUES (?, ?, ?, ?)', [estudianteDTO.name, estudianteDTO.email, "CONTRASEÑA TEMPORAL", estudianteDTO.career]);
+        const [result] = await promisePool.query<mysql.ResultSetHeader>('INSERT INTO estudiantes (nombre, email, password, carrera) VALUES (?, ?, ?, ?)', [estudianteDTO.name, estudianteDTO.email, "CONTRASEÑA TEMPORAL", estudianteDTO.career]);
 
-        const insertId = (result as mysql.ResultSetHeader).insertId;
+        const nuevoEstudiante: Estudiante | null = await this.ReadEstudianteById(result.insertId);
 
-        const [rows] = await promisePool.query<mysql.RowDataPacket[]>('SELECT * FROM estudiantes WHERE id = ?', [insertId]);
-
-        const estudiantes: Estudiante[] = rows.map((rows) => rows as Estudiante);
-
-        if (estudiantes[0] == null)
+        if (!nuevoEstudiante)
         {
             return null;
         }
 
-        const estudianteCreado: GETEstudianteResponseDTO =
-        {
-            id: estudiantes[0].id,
-            name: estudiantes[0].nombre,
-            email: estudiantes[0].email,
-            career: estudiantes[0].carrera,
-            createdAt: estudiantes[0].creado_en,
-        }
-
-        return estudianteCreado;
+        return nuevoEstudiante;
     }
 
-    static async getEstudianteById(id: number): Promise<GETEstudianteResponseDTO | null>
+    static ReadAllEstudiantes = async (): Promise<Estudiante[] | null> =>
     {
-        const [rows] = await promisePool.query<mysql.RowDataPacket[]>('SELECT * FROM estudiantes WHERE id = ?', [id]);
+        const [rows] = await promisePool.query<mysql.RowDataPacket[]>('SELECT * FROM estudiantes;');
 
         const estudiantes: Estudiante[] = rows.map((rows) => rows as Estudiante);
 
@@ -58,15 +45,53 @@ export class EstudianteRepository
             return null;
         }
 
-        const estudianteDTO: GETEstudianteResponseDTO =
+        return estudiantes;
+    }
+
+    static ReadEstudianteById = async (id: number): Promise<Estudiante | null> =>
+    {
+        const [rows] = await promisePool.query<mysql.RowDataPacket[]>('SELECT * FROM estudiantes WHERE id = ?;', [id]);
+
+        const estudiantes: Estudiante[] = rows.map((rows) => rows as Estudiante);
+
+        if (estudiantes[0] == null)
         {
-            id: estudiantes[0].id,
-            name: estudiantes[0].nombre,
-            email: estudiantes[0].email,
-            career: estudiantes[0].carrera,
-            createdAt: estudiantes[0].creado_en,
+            return null;
         }
 
-        return estudianteDTO;
+        return estudiantes[0];
+    }
+
+    static UpdateEstudianteById = async (id: number, estudianteEditadoDTO: PUTEstudianteRequestDTO): Promise<Estudiante | null> =>
+    {
+        const [result] = await promisePool.query<mysql.ResultSetHeader>('UPDATE estudiantes SET nombre = ?, email = ?, carrera = ? WHERE id = ?;', [estudianteEditadoDTO.name, estudianteEditadoDTO.email, estudianteEditadoDTO.career, id]);
+
+        let estudianteEditado: Estudiante | null = null;
+
+        if (!result.insertId)
+        {
+            estudianteEditado = await this.ReadEstudianteById(id);
+        }        
+
+        if (estudianteEditado == null)
+        {
+            return null;
+        }
+
+        return estudianteEditado;
+    }
+
+    static DeleteEstudianteById = async (id: number): Promise<boolean> =>
+    {
+        const [result] = await promisePool.query<mysql.ResultSetHeader>('DELETE FROM estudiantes WHERE id = ?;', [id]);
+
+        if (result.affectedRows === 0)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 }

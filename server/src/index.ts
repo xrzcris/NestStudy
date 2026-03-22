@@ -1,9 +1,10 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./swagger";
-import userRoutes from "./routes/user.routes";
 import dotenv from 'dotenv';
 import estudiantesRoutes from "./routes/estudiantes.routes";
+import proyectosRoutes from "./routes/proyectos.routes";
+import colaboracionesRoutes from "./routes/colaboraciones.routes";
 
 // Load environment variables
 dotenv.config();
@@ -14,8 +15,9 @@ const app = express();
 app.use(express.json());
 
 // Rutas
-app.use("/api/test", userRoutes);
 app.use("/api/estudiantes", estudiantesRoutes);
+app.use("/api/proyectos", proyectosRoutes);
+app.use("/api/colaboraciones", colaboracionesRoutes);
 
 // SwaggerUI
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

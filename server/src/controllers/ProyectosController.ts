@@ -1,22 +1,22 @@
-import { ToGETEstudianteResponseDTOFromEstudiante } from "../mappers/estudiantesMappers";
-import { EstudiantesRepository } from "../repository/EstudiantesRepository";
-import { Estudiante, GETEstudianteResponseDTO, POSTEstudianteRequestDTO, PUTEstudianteRequestDTO } from "../types/EstudiantesTypes";
+import { ToGETProyectoResponseDTOFromProyecto } from "../mappers/ProyectosMappers";
+import { ProyectosRepository } from "../repository/ProyectosRepository";
+import { GETProyectoResponseDTO, POSTProyectoRequestDTO, Proyecto, PUTProyectoRequestDTO } from "../types/ProyectosTypes";
 import { Request, Response } from 'express';
 
 /**
  * @openapi
  * tags:
- *   name: Estudiantes
- *   description: Todo lo relacionado con estudiantes
+ *   name: Proyectos
+ *   description: Todo lo relacionado con proyectos
  */
-export class EstudiantesController
+export class ProyectosController
 {
     /**
      * @openapi
-     * /api/estudiantes:
+     * /api/proyectos:
      *   post:
-     *     summary: Crear estudiante (contraseñas no implementadas)
-     *     tags: [Estudiantes]
+     *     summary: Crear un proyecto
+     *     tags: [Proyectos]
      *     requestBody:
      *       required: true
      *       content:
@@ -24,47 +24,50 @@ export class EstudiantesController
      *           schema:
      *             type: object
      *             properties:
-     *               name:
+     *               title:
      *                 type: string
-     *               email:
+     *               description:
      *                 type: string
      *               career:
      *                 type: string
+     *               studentId:
+     *                 type: number
      *             example:
-     *               name: "string"
-     *               email: "string"
+     *               title: "string"
+     *               description: "string"
      *               career: "string"
+     *               studentId: 1
      *     responses:
      *       201:
-     *         description: GETEstudianteResponseDTO
+     *         description: GETProyectoResponseDTO
      *       500:
      *         description: Internal server error
      */
-    static Create = async (req: Request<{}, {}, POSTEstudianteRequestDTO>, res: Response) =>
+    static Create = async (req: Request<{}, {}, POSTProyectoRequestDTO>, res: Response) =>
     {
         try
         {
-            const nuevoEstudiante = await EstudiantesRepository.CreateEstudiante(req.body);
+            const nuevoProyecto: Proyecto | null = await ProyectosRepository.CreateProyecto(req.body);
 
-            const nuevoEstudianteDTO = ToGETEstudianteResponseDTOFromEstudiante(nuevoEstudiante!);
+            const nuevoProyectoDTO = ToGETProyectoResponseDTOFromProyecto(nuevoProyecto!);
 
-            res.status(201).json(nuevoEstudianteDTO);
+            res.status(201).json(nuevoProyectoDTO);
         }
         catch (error)
         {
-            res.status(500).json({ message: 'Internal server error 💀: ' + error});
+            res.status(500).json({ message: '💀 Internal server error. ' + error});
         }
     }
 
     /**
      * @openapi
-     * /api/estudiantes:
+     * /api/proyectos:
      *   get:
-     *     summary: Obtener todos los estudiantes
-     *     tags: [Estudiantes]
+     *     summary: Obtener todos los proyectos
+     *     tags: [Proyectos]
      *     responses:
      *       200:
-     *         description: GETEstudianteResponseDTO
+     *         description: GETProyectoResponseDTO
      *       500:
      *         description: Internal server error
      */
@@ -72,31 +75,31 @@ export class EstudiantesController
     {
         try
         {
-            const estudiantes: Estudiante[] | null = await EstudiantesRepository.ReadAllEstudiantes();
+            const proyectos: Proyecto[] | null = await ProyectosRepository.ReadAllProyectos();
 
-            if (estudiantes == null)
+            if (proyectos == null)
             {
                 res.status(200).json([]);
 
                 return
             }
 
-            const estudiantesDTO: GETEstudianteResponseDTO[] = estudiantes.map(ToGETEstudianteResponseDTOFromEstudiante)
+            const proyectosDTO: GETProyectoResponseDTO[] = proyectos.map(ToGETProyectoResponseDTOFromProyecto);
 
-            res.status(200).json(estudiantesDTO);
+            res.status(200).json(proyectosDTO);
         }
         catch (error)
         {
-            res.status(500).json({ message: 'Internal server error 💀: ' + error});
+            res.status(500).json({ message: '💀 Internal server error. ' + error});
         }
     }
 
     /**
      * @openapi
-     * /api/estudiantes/{id}:
+     * /api/proyectos/{id}:
      *   get:
-     *     summary: Obtener estudiante por Id
-     *     tags: [Estudiantes]
+     *     summary: Obtener proyecto por Id
+     *     tags: [Proyectos]
      *     parameters:
      *       - in: path
      *         name: id
@@ -106,7 +109,7 @@ export class EstudiantesController
      *         description: Id
      *     responses:
      *       200:
-     *         description: GETEstudianteResponseDTO
+     *         description: GETProyectoResponseDTO
      *       404:
      *         description: Not Found
      *       500:
@@ -116,31 +119,31 @@ export class EstudiantesController
     {
         try
         {
-            const estudiante: Estudiante | null = await EstudiantesRepository.ReadEstudianteById(req.params.id);
+            const proyecto: Proyecto | null = await ProyectosRepository.ReadProyectoById(req.params.id);
 
-            if (estudiante == null)
+            if (proyecto == null)
             {
                 res.status(404).send("Not Found");
 
                 return
             }
 
-            const estudianteDTO = ToGETEstudianteResponseDTOFromEstudiante(estudiante)
+            const proyectoDTO = ToGETProyectoResponseDTOFromProyecto(proyecto);
 
-            res.status(200).json(estudianteDTO);
+            res.status(200).json(proyectoDTO);
         }
         catch (error)
         {
-            res.status(500).json({ message: 'Internal server error 💀: ' + error});
+            res.status(500).json({ message: '💀 Internal server error. ' + error});
         }
     }
 
     /**
      * @openapi
-     * /api/estudiantes/{id}:
+     * /api/proyectos/{id}:
      *   put:
-     *     summary: Editar estudiante por Id
-     *     tags: [Estudiantes]
+     *     summary: Editar proyecto por Id
+     *     tags: [Proyectos]
      *     requestBody:
      *       required: true
      *       content:
@@ -148,16 +151,19 @@ export class EstudiantesController
      *           schema:
      *             type: object
      *             properties:
-     *               name:
+     *               title:
      *                 type: string
-     *               email:
+     *               description:
      *                 type: string
      *               career:
      *                 type: string
+     *               studentId:
+     *                 type: number
      *             example:
-     *               name: "string"
-     *               email: "string"
+     *               title: "string"
+     *               description: "string"
      *               career: "string"
+     *               studentId: 1
      *     parameters:
      *       - in: path
      *         name: id
@@ -167,41 +173,41 @@ export class EstudiantesController
      *         description: Id
      *     responses:
      *       200:
-     *         description: GETEstudianteResponseDTO
+     *         description: GETProyectoResponseDTO
      *       404:
      *         description: Not Found
      *       500:
      *         description: Internal server error
      */
-    static Update = async (req: Request<{ id: number }, {}, PUTEstudianteRequestDTO>, res: Response) =>
+    static Update = async (req: Request<{ id: number }, {}, PUTProyectoRequestDTO>, res: Response) =>
     {
         try
         {
-            const estudianteEditado: Estudiante | null = await EstudiantesRepository.UpdateEstudianteById(req.params.id, req.body);
+            const proyectoEditado: Proyecto | null = await ProyectosRepository.UpdateProyectoById(req.params.id, req.body);
 
-            if (estudianteEditado == null)
+            if (proyectoEditado == null)
             {
                 res.status(404).send("Not Found");
 
                 return
             }
 
-            const estudianteEditadoDTO = ToGETEstudianteResponseDTOFromEstudiante(estudianteEditado)
+            const proyectoEditadoDTO = ToGETProyectoResponseDTOFromProyecto(proyectoEditado);
 
-            res.status(200).json(estudianteEditadoDTO);
+            res.status(200).json(proyectoEditadoDTO);
         }
         catch (error)
         {
-            res.status(500).json({ message: 'Internal server error: 💀' + error});
+            res.status(500).json({ message: '💀 Internal server error. ' + error});
         }
     }
 
     /**
      * @openapi
-     * /api/estudiantes/{id}:
+     * /api/proyectos/{id}:
      *   delete:
-     *     summary: Eliminar estudiante por Id
-     *     tags: [Estudiantes]
+     *     summary: Eliminar proyecto por Id
+     *     tags: [Proyectos]
      *     parameters:
      *       - in: path
      *         name: id
@@ -221,7 +227,7 @@ export class EstudiantesController
     {
         try
         {
-            const eliminado = await EstudiantesRepository.DeleteEstudianteById(req.params.id);
+            const eliminado = await ProyectosRepository.DeleteProyectoById(req.params.id);
 
             if (eliminado)
             {
@@ -234,7 +240,7 @@ export class EstudiantesController
         }
         catch (error)
         {
-            res.status(500).json({ message: 'Internal server error: 💀' + error});
+            res.status(500).json({ message: '💀 Internal server error. ' + error});
         }
     }
 }

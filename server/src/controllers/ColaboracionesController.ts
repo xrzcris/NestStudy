@@ -1,0 +1,240 @@
+import { Request, Response } from 'express';
+import { Colaboracion, GETColaboracionResponseDTO, POSTColaboracionRequestDTO, PUTColaboracionRequestDTO } from '../types/ColaboracionesTypes';
+import { ColaboracionesRepository } from '../repository/ColaboracionesRepository';
+import { ToGETColaboracionResponseDTOFromColaboracion } from '../mappers/ColaboracionesMappers';
+
+/**
+ * @openapi
+ * tags:
+ *   name: Colaboraciones
+ *   description: Todo lo relacionado con colaboraciones
+ */
+export class ColaboracionesController
+{
+    /**
+     * @openapi
+     * /api/colaboraciones:
+     *   post:
+     *     summary: Crear una colaboración
+     *     tags: [Colaboraciones]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               content:
+     *                 type: string
+     *               projectId:
+     *                 type: number
+     *               studentId:
+     *                 type: number
+     *             example:
+     *               content: "string"
+     *               projectId: 1
+     *               studentId: 1
+     *     responses:
+     *       201:
+     *         description: GETColaboracionResponseDTO
+     *       500:
+     *         description: Internal server error
+     */
+    static Create = async (req: Request<{}, {}, POSTColaboracionRequestDTO>, res: Response) =>
+    {
+        try
+        {
+            const nuevaColaboracion: Colaboracion | null = await ColaboracionesRepository.CreateColaboracion(req.body);
+
+            const nuevaColaboracionDTO = ToGETColaboracionResponseDTOFromColaboracion(nuevaColaboracion!);
+
+            res.status(201).json(nuevaColaboracionDTO);
+        }
+        catch (error)
+        {
+            res.status(500).json({ message: '💀 Internal server error. ' + error});
+        }
+    }
+
+    /**
+     * @openapi
+     * /api/colaboraciones:
+     *   get:
+     *     summary: Obtener todas las colaboraciones
+     *     tags: [Colaboraciones]
+     *     responses:
+     *       200:
+     *         description: GETColaboracionResponseDTO
+     *       500:
+     *         description: Internal server error
+     */
+    static GetAll = async (req: Request, res: Response) =>
+    {
+        try
+        {
+            const colaboraciones: Colaboracion[] | null = await ColaboracionesRepository.ReadAllColaboraciones();
+
+            if (colaboraciones == null)
+            {
+                res.status(200).json([]);
+
+                return
+            }
+
+            const colaboracionesDTO: GETColaboracionResponseDTO[] = colaboraciones.map(ToGETColaboracionResponseDTOFromColaboracion);
+
+            res.status(200).json(colaboracionesDTO);
+        }
+        catch (error)
+        {
+            res.status(500).json({ message: '💀 Internal server error. ' + error});
+        }
+    }
+
+    /**
+     * @openapi
+     * /api/colaboraciones/{id}:
+     *   get:
+     *     summary: Obtener colaboración por Id
+     *     tags: [Colaboraciones]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id
+     *     responses:
+     *       200:
+     *         description: GETColaboracionResponseDTO
+     *       404:
+     *         description: Not Found
+     *       500:
+     *         description: Internal server error
+     */
+    static GetById = async (req: Request<{ id: number }, {}, {}>, res: Response) =>
+    {
+        try
+        {
+            const colaboracion: Colaboracion | null = await ColaboracionesRepository.ReadColaboracionById(req.params.id);
+
+            if (colaboracion == null)
+            {
+                res.status(404).send("Not Found");
+
+                return
+            }
+
+            const colaboracionDTO = ToGETColaboracionResponseDTOFromColaboracion(colaboracion)
+
+            res.status(200).json(colaboracionDTO);
+        }
+        catch (error)
+        {
+            res.status(500).json({ message: '💀 Internal server error. ' + error});
+        }
+    }
+
+    /**
+     * @openapi
+     * /api/colaboraciones/{id}:
+     *   put:
+     *     summary: Editar colaboración por Id
+     *     tags: [Colaboraciones]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               content:
+     *                 type: string
+     *               projectId:
+     *                 type: number
+     *               studentId:
+     *                 type: number
+     *             example:
+     *               content: "string"
+     *               projectId: 1
+     *               studentId: 1
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id
+     *     responses:
+     *       200:
+     *         description: GETColaboracionResponseDTO
+     *       404:
+     *         description: Not Found
+     *       500:
+     *         description: Internal server error
+     */
+    static Update = async (req: Request<{ id: number }, {}, PUTColaboracionRequestDTO>, res: Response) =>
+    {
+        try
+        {
+            const colaboracionEditada: Colaboracion | null = await ColaboracionesRepository.UpdateColaboracionById(req.params.id, req.body);
+
+            if (colaboracionEditada == null)
+            {
+                res.status(404).send("Not Found");
+
+                return
+            }
+
+            const colaboracionEditadaDTO = ToGETColaboracionResponseDTOFromColaboracion(colaboracionEditada);
+
+            res.status(200).json(colaboracionEditadaDTO);
+        }
+        catch (error)
+        {
+            res.status(500).json({ message: '💀 Internal server error. ' + error});
+        }
+    }
+
+    /**
+     * @openapi
+     * /api/colaboraciones/{id}:
+     *   delete:
+     *     summary: Eliminar colaboración por Id
+     *     tags: [Colaboraciones]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id
+     *     responses:
+     *       204:
+     *         description: No content
+     *       404:
+     *         description: Not Found
+     *       500:
+     *         description: Internal server error
+     */
+    static Delete = async (req: Request<{ id: number }, {}, {}>, res: Response) =>
+    {
+        try
+        {
+            const eliminado = await ColaboracionesRepository.DeleteColaboracionById(req.params.id);
+
+            if (eliminado)
+            {
+                res.sendStatus(204);
+            }
+            else
+            {
+                res.status(404).send("Not Found");
+            }
+        }
+        catch (error)
+        {
+            res.status(500).json({ message: '💀 Internal server error. ' + error});
+        }
+    }
+}

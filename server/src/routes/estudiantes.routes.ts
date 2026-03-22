@@ -1,9 +1,12 @@
 import { Router } from "express";
-import { EstudianteController } from "../controllers/EstudiantesController";
+import { EstudiantesController } from "../controllers/EstudiantesController";
 
 const estudiantesRoutes: Router = Router();
 
-estudiantesRoutes.post("/", EstudianteController.createEstudiante);
-estudiantesRoutes.get("/:id", EstudianteController.GetEstudianteById);
+estudiantesRoutes.post("/", EstudiantesController.Create);
+estudiantesRoutes.get("/", EstudiantesController.GetAll);
+estudiantesRoutes.get("/:id", EstudiantesController.GetById);
+estudiantesRoutes.put("/:id", EstudiantesController.Update);
+estudiantesRoutes.delete("/:id", EstudiantesController.Delete);
 
 export default estudiantesRoutes;
