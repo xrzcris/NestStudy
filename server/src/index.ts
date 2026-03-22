@@ -2,9 +2,10 @@ import express from "express";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./swagger";
 import dotenv from 'dotenv';
-import estudiantesRoutes from "./routes/estudiantes.routes";
+import authRoutes from "./routes/auth.routes";
 import proyectosRoutes from "./routes/proyectos.routes";
 import colaboracionesRoutes from "./routes/colaboraciones.routes";
+import cors from 'cors';
 
 // Load environment variables
 dotenv.config();
@@ -12,10 +13,11 @@ dotenv.config();
 const app = express();
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 
 // Rutas
-app.use("/api/estudiantes", estudiantesRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/proyectos", proyectosRoutes);
 app.use("/api/colaboraciones", colaboracionesRoutes);
 

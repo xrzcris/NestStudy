@@ -1,6 +1,6 @@
 import { ToGETProyectoResponseDTOFromProyecto } from "../mappers/ProyectosMappers";
 import { ProyectosRepository } from "../repository/ProyectosRepository";
-import { GETProyectoResponseDTO, POSTProyectoRequestDTO, Proyecto, PUTProyectoRequestDTO } from "../types/ProyectosTypes";
+import { POSTProyectoRequestDTO, Proyecto, PUTProyectoRequestDTO } from "../types/ProyectosTypes";
 import { Request, Response } from 'express';
 
 /**
@@ -16,6 +16,8 @@ export class ProyectosController
      * /api/proyectos:
      *   post:
      *     summary: Crear un proyecto
+     *     security:
+     *       - bearerAuth: []
      *     tags: [Proyectos]
      *     requestBody:
      *       required: true
@@ -49,9 +51,7 @@ export class ProyectosController
         {
             const nuevoProyecto: Proyecto | null = await ProyectosRepository.CreateProyecto(req.body);
 
-            const nuevoProyectoDTO = ToGETProyectoResponseDTOFromProyecto(nuevoProyecto!);
-
-            res.status(201).json(nuevoProyectoDTO);
+            res.status(201).json(ToGETProyectoResponseDTOFromProyecto(nuevoProyecto!));
         }
         catch (error)
         {
@@ -84,9 +84,7 @@ export class ProyectosController
                 return
             }
 
-            const proyectosDTO: GETProyectoResponseDTO[] = proyectos.map(ToGETProyectoResponseDTOFromProyecto);
-
-            res.status(200).json(proyectosDTO);
+            res.status(200).json(proyectos.map(ToGETProyectoResponseDTOFromProyecto));
         }
         catch (error)
         {
@@ -110,16 +108,25 @@ export class ProyectosController
      *     responses:
      *       200:
      *         description: GETProyectoResponseDTO
+     *       400:
+     *         description: Invalid ID format
      *       404:
      *         description: Not Found
      *       500:
      *         description: Internal server error
      */
-    static GetById = async (req: Request<{ id: number }, {}, {}>, res: Response) =>
+    static GetById = async (req: Request<{ id: string }, {}, {}>, res: Response) =>
     {
         try
         {
-            const proyecto: Proyecto | null = await ProyectosRepository.ReadProyectoById(req.params.id);
+            const id: number = parseInt(req.params.id, 10); // Convert string to number
+
+            if (isNaN(id))
+            {
+                return res.status(400).send("Invalid ID format");
+            }
+
+            const proyecto: Proyecto | null = await ProyectosRepository.ReadProyectoById(id);
 
             if (proyecto == null)
             {
@@ -128,9 +135,7 @@ export class ProyectosController
                 return
             }
 
-            const proyectoDTO = ToGETProyectoResponseDTOFromProyecto(proyecto);
-
-            res.status(200).json(proyectoDTO);
+            res.status(200).json(ToGETProyectoResponseDTOFromProyecto(proyecto));
         }
         catch (error)
         {
@@ -143,6 +148,8 @@ export class ProyectosController
      * /api/proyectos/{id}:
      *   put:
      *     summary: Editar proyecto por Id
+     *     security:
+     *       - bearerAuth: []
      *     tags: [Proyectos]
      *     requestBody:
      *       required: true
@@ -174,16 +181,25 @@ export class ProyectosController
      *     responses:
      *       200:
      *         description: GETProyectoResponseDTO
+     *       400:
+     *         description: Invalid ID format
      *       404:
      *         description: Not Found
      *       500:
      *         description: Internal server error
      */
-    static Update = async (req: Request<{ id: number }, {}, PUTProyectoRequestDTO>, res: Response) =>
+    static Update = async (req: Request<{ id: string }, {}, PUTProyectoRequestDTO>, res: Response) =>
     {
         try
         {
-            const proyectoEditado: Proyecto | null = await ProyectosRepository.UpdateProyectoById(req.params.id, req.body);
+            const id: number = parseInt(req.params.id, 10); // Convert string to number
+
+            if (isNaN(id))
+            {
+                return res.status(400).send("Invalid ID format");
+            }
+
+            const proyectoEditado: Proyecto | null = await ProyectosRepository.UpdateProyectoById(id, req.body);
 
             if (proyectoEditado == null)
             {
@@ -192,9 +208,7 @@ export class ProyectosController
                 return
             }
 
-            const proyectoEditadoDTO = ToGETProyectoResponseDTOFromProyecto(proyectoEditado);
-
-            res.status(200).json(proyectoEditadoDTO);
+            res.status(200).json(ToGETProyectoResponseDTOFromProyecto(proyectoEditado));
         }
         catch (error)
         {
@@ -207,6 +221,8 @@ export class ProyectosController
      * /api/proyectos/{id}:
      *   delete:
      *     summary: Eliminar proyecto por Id
+     *     security:
+     *       - bearerAuth: []
      *     tags: [Proyectos]
      *     parameters:
      *       - in: path
@@ -218,16 +234,25 @@ export class ProyectosController
      *     responses:
      *       204:
      *         description: No content
+     *       400:
+     *         description: Invalid ID format
      *       404:
      *         description: Not Found
      *       500:
      *         description: Internal server error
      */
-    static Delete = async (req: Request<{ id: number }, {}, {}>, res: Response) =>
+    static Delete = async (req: Request<{ id: string }, {}, {}>, res: Response) =>
     {
         try
         {
-            const eliminado = await ProyectosRepository.DeleteProyectoById(req.params.id);
+            const id: number = parseInt(req.params.id, 10); // Convert string to number
+
+            if (isNaN(id))
+            {
+                return res.status(400).send("Invalid ID format");
+            }
+
+            const eliminado: boolean = await ProyectosRepository.DeleteProyectoById(id);
 
             if (eliminado)
             {

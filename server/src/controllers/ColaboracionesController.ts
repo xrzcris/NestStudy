@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Colaboracion, GETColaboracionResponseDTO, POSTColaboracionRequestDTO, PUTColaboracionRequestDTO } from '../types/ColaboracionesTypes';
+import { Colaboracion, POSTColaboracionRequestDTO, PUTColaboracionRequestDTO } from '../types/ColaboracionesTypes';
 import { ColaboracionesRepository } from '../repository/ColaboracionesRepository';
 import { ToGETColaboracionResponseDTOFromColaboracion } from '../mappers/ColaboracionesMappers';
 
@@ -16,6 +16,8 @@ export class ColaboracionesController
      * /api/colaboraciones:
      *   post:
      *     summary: Crear una colaboración
+     *     security:
+     *       - bearerAuth: []
      *     tags: [Colaboraciones]
      *     requestBody:
      *       required: true
@@ -46,9 +48,7 @@ export class ColaboracionesController
         {
             const nuevaColaboracion: Colaboracion | null = await ColaboracionesRepository.CreateColaboracion(req.body);
 
-            const nuevaColaboracionDTO = ToGETColaboracionResponseDTOFromColaboracion(nuevaColaboracion!);
-
-            res.status(201).json(nuevaColaboracionDTO);
+            res.status(201).json(ToGETColaboracionResponseDTOFromColaboracion(nuevaColaboracion!));
         }
         catch (error)
         {
@@ -81,9 +81,7 @@ export class ColaboracionesController
                 return
             }
 
-            const colaboracionesDTO: GETColaboracionResponseDTO[] = colaboraciones.map(ToGETColaboracionResponseDTOFromColaboracion);
-
-            res.status(200).json(colaboracionesDTO);
+            res.status(200).json(colaboraciones.map(ToGETColaboracionResponseDTOFromColaboracion));
         }
         catch (error)
         {
@@ -107,16 +105,25 @@ export class ColaboracionesController
      *     responses:
      *       200:
      *         description: GETColaboracionResponseDTO
+     *       400:
+     *         description: Invalid ID format
      *       404:
      *         description: Not Found
      *       500:
      *         description: Internal server error
      */
-    static GetById = async (req: Request<{ id: number }, {}, {}>, res: Response) =>
+    static GetById = async (req: Request<{ id: string }, {}, {}>, res: Response) =>
     {
         try
         {
-            const colaboracion: Colaboracion | null = await ColaboracionesRepository.ReadColaboracionById(req.params.id);
+            const id: number = parseInt(req.params.id, 10); // Convert string to number
+
+            if (isNaN(id))
+            {
+                return res.status(400).send("Invalid ID format");
+            }
+
+            const colaboracion: Colaboracion | null = await ColaboracionesRepository.ReadColaboracionById(id);
 
             if (colaboracion == null)
             {
@@ -125,9 +132,7 @@ export class ColaboracionesController
                 return
             }
 
-            const colaboracionDTO = ToGETColaboracionResponseDTOFromColaboracion(colaboracion)
-
-            res.status(200).json(colaboracionDTO);
+            res.status(200).json(ToGETColaboracionResponseDTOFromColaboracion(colaboracion));
         }
         catch (error)
         {
@@ -140,6 +145,8 @@ export class ColaboracionesController
      * /api/colaboraciones/{id}:
      *   put:
      *     summary: Editar colaboración por Id
+     *     security:
+     *       - bearerAuth: []
      *     tags: [Colaboraciones]
      *     requestBody:
      *       required: true
@@ -168,16 +175,25 @@ export class ColaboracionesController
      *     responses:
      *       200:
      *         description: GETColaboracionResponseDTO
+     *       400:
+     *         description: Invalid ID format
      *       404:
      *         description: Not Found
      *       500:
      *         description: Internal server error
      */
-    static Update = async (req: Request<{ id: number }, {}, PUTColaboracionRequestDTO>, res: Response) =>
+    static Update = async (req: Request<{ id: string }, {}, PUTColaboracionRequestDTO>, res: Response) =>
     {
         try
         {
-            const colaboracionEditada: Colaboracion | null = await ColaboracionesRepository.UpdateColaboracionById(req.params.id, req.body);
+            const id: number = parseInt(req.params.id, 10); // Convert string to number
+
+            if (isNaN(id))
+            {
+                return res.status(400).send("Invalid ID format");
+            }
+
+            const colaboracionEditada: Colaboracion | null = await ColaboracionesRepository.UpdateColaboracionById(id, req.body);
 
             if (colaboracionEditada == null)
             {
@@ -186,9 +202,7 @@ export class ColaboracionesController
                 return
             }
 
-            const colaboracionEditadaDTO = ToGETColaboracionResponseDTOFromColaboracion(colaboracionEditada);
-
-            res.status(200).json(colaboracionEditadaDTO);
+            res.status(200).json(ToGETColaboracionResponseDTOFromColaboracion(colaboracionEditada));
         }
         catch (error)
         {
@@ -201,6 +215,8 @@ export class ColaboracionesController
      * /api/colaboraciones/{id}:
      *   delete:
      *     summary: Eliminar colaboración por Id
+     *     security:
+     *       - bearerAuth: []
      *     tags: [Colaboraciones]
      *     parameters:
      *       - in: path
@@ -212,16 +228,25 @@ export class ColaboracionesController
      *     responses:
      *       204:
      *         description: No content
+     *       400:
+     *         description: Invalid ID format
      *       404:
      *         description: Not Found
      *       500:
      *         description: Internal server error
      */
-    static Delete = async (req: Request<{ id: number }, {}, {}>, res: Response) =>
+    static Delete = async (req: Request<{ id: string }, {}, {}>, res: Response) =>
     {
         try
         {
-            const eliminado = await ColaboracionesRepository.DeleteColaboracionById(req.params.id);
+            const id: number = parseInt(req.params.id, 10); // Convert string to number
+
+            if (isNaN(id))
+            {
+                return res.status(400).send("Invalid ID format");
+            }
+
+            const eliminado: boolean = await ColaboracionesRepository.DeleteColaboracionById(id);
 
             if (eliminado)
             {

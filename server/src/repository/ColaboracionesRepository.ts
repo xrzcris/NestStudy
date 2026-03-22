@@ -1,18 +1,6 @@
 import mysql from 'mysql2';
-import dotenv from 'dotenv';
+import { pool } from "../db/connection";
 import { Colaboracion, POSTColaboracionRequestDTO, PUTColaboracionRequestDTO } from '../types/ColaboracionesTypes';
-
-// Load environment variables
-dotenv.config();
-
-// Create a connection pool to the MySQL database
-const pool = mysql.createPool({
-    host: process.env.DB_HOST!,
-    user: process.env.DB_USER!,
-    password: process.env.DB_PASSWORD!,
-    database: process.env.DB_NAME!,
-    port: Number(process.env.DB_PORT),
-});
 
 // Use Promise-based pool queries (for async/await support)
 const promisePool = pool.promise();

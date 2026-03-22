@@ -7,6 +7,15 @@ const options = {
       title: "NestStudy Backend",
       version: "1.0.0",
     },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT", // Specify that the token is JWT
+        },
+      },
+    },
   },
   apis: ["./src/routes/*.ts", "./src/controllers/*.ts"], // path to route files
 };

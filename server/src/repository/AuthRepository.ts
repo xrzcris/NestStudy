@@ -1,28 +1,19 @@
 import mysql from 'mysql2';
-import dotenv from 'dotenv';
+import { pool } from "../db/connection";
 import { Estudiante, POSTEstudianteRequestDTO, PUTEstudianteRequestDTO } from '../types/EstudiantesTypes';
-
-// Load environment variables
-dotenv.config();
-
-// Create a connection pool to the MySQL database
-const pool = mysql.createPool({
-    host: process.env.DB_HOST!,
-    user: process.env.DB_USER!,
-    password: process.env.DB_PASSWORD!,
-    database: process.env.DB_NAME!,
-    port: Number(process.env.DB_PORT),
-});
+import bcrypt from 'bcrypt';
 
 // Use Promise-based pool queries (for async/await support)
 const promisePool = pool.promise();
 
-// EstudiantesRepository.ts
-export class EstudiantesRepository
+// AuthRepository.ts
+export class AuthRepository
 {
     static CreateEstudiante = async (estudianteDTO: POSTEstudianteRequestDTO): Promise<Estudiante | null> =>
     {
-        const [result] = await promisePool.query<mysql.ResultSetHeader>('INSERT INTO estudiantes (nombre, email, password, carrera) VALUES (?, ?, ?, ?)', [estudianteDTO.name, estudianteDTO.email, "CONTRASEÑA TEMPORAL", estudianteDTO.career]);
+        const hash = await bcrypt.hash(estudianteDTO.password, 10);
+
+        const [result] = await promisePool.query<mysql.ResultSetHeader>('INSERT INTO estudiantes (nombre, email, password, carrera) VALUES (?, ?, ?, ?)', [estudianteDTO.name, estudianteDTO.email, hash, estudianteDTO.career]);
 
         const nuevoEstudiante: Estudiante | null = await this.ReadEstudianteById(result.insertId);
 
@@ -51,6 +42,20 @@ export class EstudiantesRepository
     static ReadEstudianteById = async (id: number): Promise<Estudiante | null> =>
     {
         const [rows] = await promisePool.query<mysql.RowDataPacket[]>('SELECT * FROM estudiantes WHERE id = ?;', [id]);
+
+        const estudiantes: Estudiante[] = rows.map((rows) => rows as Estudiante);
+
+        if (estudiantes[0] == null)
+        {
+            return null;
+        }
+
+        return estudiantes[0];
+    }
+
+    static ReadEstudianteByEmail = async (email: string): Promise<Estudiante | null> =>
+    {
+        const [rows] = await promisePool.query<mysql.RowDataPacket[]>('SELECT * FROM estudiantes WHERE email = ?;', [email]);
 
         const estudiantes: Estudiante[] = rows.map((rows) => rows as Estudiante);
 
