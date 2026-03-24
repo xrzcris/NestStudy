@@ -34,11 +34,15 @@
    **(Esto es un ejemplo, cambia acorde a tu configuración)**
 
    ```
+   # Base de datos
    DB_HOST=localhost
    DB_USER=root
    DB_PASSWORD=C0ntr@seña123
    DB_NAME=studynest
    DB_PORT=3306
+
+   # Clave secreta para JWT
+   JWT_SECRET=MínimoTreintaYDosCarácteresDeTuPreferencia
    ```
 
 4. La estructura de los archivos debe verse así:
