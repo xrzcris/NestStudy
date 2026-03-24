@@ -1,5 +1,7 @@
-import { ToGETProyectoResponseDTOFromProyecto } from "../mappers/ProyectosMappers";
+import { ToGETOneProyectoResponseDTOFromProyecto, ToGETProyectoResponseDTOFromProyecto } from "../mappers/ProyectosMappers";
+import { ColaboracionesRepository } from "../repository/ColaboracionesRepository";
 import { ProyectosRepository } from "../repository/ProyectosRepository";
+import { Colaboracion } from "../types/ColaboracionesTypes";
 import { POSTProyectoRequestDTO, Proyecto, PUTProyectoRequestDTO } from "../types/ProyectosTypes";
 import { Request, Response } from 'express';
 
@@ -42,6 +44,8 @@ export class ProyectosController
      *     responses:
      *       201:
      *         description: GETProyectoResponseDTO
+     *       401:
+     *         description: Acceso denegado. Token requerido.
      *       500:
      *         description: Internal server error
      */
@@ -107,7 +111,7 @@ export class ProyectosController
      *         description: Id
      *     responses:
      *       200:
-     *         description: GETProyectoResponseDTO
+     *         description: GETOneProyectoResponseDTO
      *       400:
      *         description: Invalid ID format
      *       404:
@@ -117,15 +121,15 @@ export class ProyectosController
      */
     static GetById = async (req: Request<{ id: string }, {}, {}>, res: Response) =>
     {
+        const id: number = parseInt(req.params.id, 10);
+
+        if (isNaN(id))
+        {
+            return res.status(400).send("Invalid ID format");
+        }
+        
         try
         {
-            const id: number = parseInt(req.params.id, 10); // Convert string to number
-
-            if (isNaN(id))
-            {
-                return res.status(400).send("Invalid ID format");
-            }
-
             const proyecto: Proyecto | null = await ProyectosRepository.ReadProyectoById(id);
 
             if (proyecto == null)
@@ -135,7 +139,9 @@ export class ProyectosController
                 return
             }
 
-            res.status(200).json(ToGETProyectoResponseDTOFromProyecto(proyecto));
+            const colaboraciones: Colaboracion[] | null = await ColaboracionesRepository.ReadColaboracionesByProyectoId(id);
+
+            res.status(200).json(ToGETOneProyectoResponseDTOFromProyecto(proyecto, colaboraciones));
         }
         catch (error)
         {
@@ -183,6 +189,8 @@ export class ProyectosController
      *         description: GETProyectoResponseDTO
      *       400:
      *         description: Invalid ID format
+     *       401:
+     *         description: Acceso denegado. Token requerido.
      *       404:
      *         description: Not Found
      *       500:
@@ -190,15 +198,15 @@ export class ProyectosController
      */
     static Update = async (req: Request<{ id: string }, {}, PUTProyectoRequestDTO>, res: Response) =>
     {
+        const id: number = parseInt(req.params.id, 10);
+
+        if (isNaN(id))
+        {
+            return res.status(400).send("Invalid ID format");
+        }
+
         try
         {
-            const id: number = parseInt(req.params.id, 10); // Convert string to number
-
-            if (isNaN(id))
-            {
-                return res.status(400).send("Invalid ID format");
-            }
-
             const proyectoEditado: Proyecto | null = await ProyectosRepository.UpdateProyectoById(id, req.body);
 
             if (proyectoEditado == null)
@@ -236,6 +244,8 @@ export class ProyectosController
      *         description: No content
      *       400:
      *         description: Invalid ID format
+     *       401:
+     *         description: Acceso denegado. Token requerido.
      *       404:
      *         description: Not Found
      *       500:
@@ -243,15 +253,15 @@ export class ProyectosController
      */
     static Delete = async (req: Request<{ id: string }, {}, {}>, res: Response) =>
     {
+        const id: number = parseInt(req.params.id, 10);
+
+        if (isNaN(id))
+        {
+            return res.status(400).send("Invalid ID format");
+        }
+
         try
         {
-            const id: number = parseInt(req.params.id, 10); // Convert string to number
-
-            if (isNaN(id))
-            {
-                return res.status(400).send("Invalid ID format");
-            }
-
             const eliminado: boolean = await ProyectosRepository.DeleteProyectoById(id);
 
             if (eliminado)

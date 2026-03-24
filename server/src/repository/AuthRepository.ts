@@ -86,6 +86,23 @@ export class AuthRepository
         return estudianteEditado;
     }
 
+    static UpdatePasswordById = async (id: number, newPassword: string): Promise<boolean> =>
+    {
+        const hash = await bcrypt.hash(newPassword, 10);
+
+        const [result] = await promisePool.query<mysql.ResultSetHeader>('UPDATE estudiantes SET password = ? WHERE id = ?;', [hash, id]);
+
+        if (!result.insertId)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+
     static DeleteEstudianteById = async (id: number): Promise<boolean> =>
     {
         const [result] = await promisePool.query<mysql.ResultSetHeader>('DELETE FROM estudiantes WHERE id = ?;', [id]);

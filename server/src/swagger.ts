@@ -4,7 +4,7 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "NestStudy Backend",
+      title: "Plataforma Colaborativa Universitaria Backend",
       version: "1.0.0",
     },
     components: {

@@ -1,3 +1,5 @@
+import { GETColaboracionResponseDTO } from "./ColaboracionesTypes";
+
 export interface Proyecto
 {
     id: number;
@@ -16,6 +18,17 @@ export interface GETProyectoResponseDTO
     career: string;
     studentId: number;
     createdAt: string;
+}
+
+export interface GETOneProyectoResponseDTO
+{
+    id: number;
+    title: string;
+    description: string;
+    career: string;
+    studentId: number;
+    createdAt: string;
+    comments: GETColaboracionResponseDTO[];
 }
 
 export interface POSTProyectoRequestDTO

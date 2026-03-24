@@ -32,6 +32,11 @@ export interface PUTEstudianteRequestDTO
     career: string;
 }
 
+export interface PUTPasswordRequestDTO
+{
+    password: string
+}
+
 export interface POSTLoginRequestDTO
 {
     email: string;

@@ -50,6 +50,20 @@ export class ColaboracionesRepository
         return colaboraciones[0];
     }
 
+    static ReadColaboracionesByProyectoId = async (id: number): Promise<Colaboracion[] | null> =>
+    {
+        const [rows] = await promisePool.query<mysql.RowDataPacket[]>('SELECT * FROM colaboraciones WHERE proyecto_id = ?;', [id]);
+
+        const colaboraciones: Colaboracion[] = rows.map((rows) => rows as Colaboracion);
+        
+        if (colaboraciones[0] == null)
+        {
+            return null;
+        }
+
+        return colaboraciones;
+    }
+
     static UpdateColaboracionById = async (id: number, colaboracionEditadaDTO: PUTColaboracionRequestDTO): Promise<Colaboracion | null> =>
     {
         const [result] = await promisePool.query<mysql.ResultSetHeader>('UPDATE colaboraciones SET contenido = ?, proyecto_id = ?, estudiante_id = ? WHERE id = ?;', [colaboracionEditadaDTO.content, colaboracionEditadaDTO.projectId, colaboracionEditadaDTO.studentId, id]);

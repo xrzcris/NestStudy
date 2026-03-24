@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { Estudiante } from '../types/EstudiantesTypes';
+import { Estudiante, GETEstudianteResponseDTO } from '../types/EstudiantesTypes';
 import dotenv from 'dotenv';
 import { Request, Response } from 'express';
 import { NextFunction } from 'express';
@@ -15,9 +15,10 @@ export class TokenService
         const token = jwt.sign(
             {
                 id: estudiante.id,
-                nombre: estudiante.nombre,
+                name: estudiante.nombre,
                 email: estudiante.email,
-                carrera: estudiante.carrera
+                career: estudiante.carrera,
+                createdAt: estudiante.creado_en
             },
             process.env.JWT_SECRET!,
             {
@@ -36,14 +37,16 @@ export class TokenService
 
         if (!token)
         {
-            res.status(401).json({ mensaje: 'Acceso denegado. Token requerido.' });
+            res.status(401).send('Acceso denegado. Token requerido.');
 
             return
         }
 
         try
         {
-            const datos = jwt.verify(token, process.env.JWT_SECRET!);
+            const data = jwt.verify(token, process.env.JWT_SECRET!) as GETEstudianteResponseDTO;
+
+            req.user = data;
 
             next();
         }

@@ -7,7 +7,7 @@ import { ToGETColaboracionResponseDTOFromColaboracion } from '../mappers/Colabor
  * @openapi
  * tags:
  *   name: Colaboraciones
- *   description: Todo lo relacionado con colaboraciones
+ *   description: Todo lo relacionado con colaboraciones, tambien conocidas como comentarios
  */
 export class ColaboracionesController
 {
@@ -39,6 +39,8 @@ export class ColaboracionesController
      *     responses:
      *       201:
      *         description: GETColaboracionResponseDTO
+     *       401:
+     *         description: Acceso denegado. Token requerido.
      *       500:
      *         description: Internal server error
      */
@@ -114,15 +116,15 @@ export class ColaboracionesController
      */
     static GetById = async (req: Request<{ id: string }, {}, {}>, res: Response) =>
     {
+        const id: number = parseInt(req.params.id, 10);
+
+        if (isNaN(id))
+        {
+            return res.status(400).send("Invalid ID format");
+        }
+
         try
         {
-            const id: number = parseInt(req.params.id, 10); // Convert string to number
-
-            if (isNaN(id))
-            {
-                return res.status(400).send("Invalid ID format");
-            }
-
             const colaboracion: Colaboracion | null = await ColaboracionesRepository.ReadColaboracionById(id);
 
             if (colaboracion == null)
@@ -177,6 +179,8 @@ export class ColaboracionesController
      *         description: GETColaboracionResponseDTO
      *       400:
      *         description: Invalid ID format
+     *       401:
+     *         description: Acceso denegado. Token requerido.
      *       404:
      *         description: Not Found
      *       500:
@@ -184,15 +188,15 @@ export class ColaboracionesController
      */
     static Update = async (req: Request<{ id: string }, {}, PUTColaboracionRequestDTO>, res: Response) =>
     {
+        const id: number = parseInt(req.params.id, 10);
+
+        if (isNaN(id))
+        {
+            return res.status(400).send("Invalid ID format");
+        }
+
         try
         {
-            const id: number = parseInt(req.params.id, 10); // Convert string to number
-
-            if (isNaN(id))
-            {
-                return res.status(400).send("Invalid ID format");
-            }
-
             const colaboracionEditada: Colaboracion | null = await ColaboracionesRepository.UpdateColaboracionById(id, req.body);
 
             if (colaboracionEditada == null)
@@ -230,6 +234,8 @@ export class ColaboracionesController
      *         description: No content
      *       400:
      *         description: Invalid ID format
+     *       401:
+     *         description: Acceso denegado. Token requerido.
      *       404:
      *         description: Not Found
      *       500:
@@ -237,15 +243,15 @@ export class ColaboracionesController
      */
     static Delete = async (req: Request<{ id: string }, {}, {}>, res: Response) =>
     {
+        const id: number = parseInt(req.params.id, 10);
+
+        if (isNaN(id))
+        {
+            return res.status(400).send("Invalid ID format");
+        }
+
         try
         {
-            const id: number = parseInt(req.params.id, 10); // Convert string to number
-
-            if (isNaN(id))
-            {
-                return res.status(400).send("Invalid ID format");
-            }
-
             const eliminado: boolean = await ColaboracionesRepository.DeleteColaboracionById(id);
 
             if (eliminado)
